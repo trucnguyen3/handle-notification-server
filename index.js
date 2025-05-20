@@ -155,10 +155,6 @@ async function createPushPackage() {
   return zipPath;
 }
 
-app.get("/", async (req, res) => {
-  res.send("This is AKA API")
-})
-
 app.use(express.static('public'));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
