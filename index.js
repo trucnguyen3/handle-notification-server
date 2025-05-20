@@ -16,7 +16,7 @@ try {
 
 //FCM
 const admin = require("firebase-admin");
-const serviceAccount = require("./akastore-project-firebase-adminsdk-ez6w3-0293ad497c.json");
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIAL);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
