@@ -93,7 +93,7 @@ async function createPushPackage() {
     allowedDomains: [DOMAIN],
     urlFormatString: `${DOMAIN}/?url=%@`,
     authenticationToken: '123456',
-    webServiceURL: 'https://8eb9-2a09-bac5-d46b-25c3-00-3c3-17.ngrok-free.app/v1',
+    webServiceURL: 'https://handle-notification-server.onrender.com/v1/pushPackages/web.net.akadigital.test',
   };
   fs.writeFileSync(path.join(tempDir, 'website.json'), JSON.stringify(websiteJSON));
 
@@ -158,6 +158,11 @@ async function createPushPackage() {
 app.get("/", async (req, res) => {
   res.send("This is AKA API")
 })
+
+app.use(express.static('public'));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 
 app.listen(3000, () => {
