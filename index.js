@@ -102,7 +102,7 @@ async function createPushPackage() {
     allowedDomains: [DOMAIN],
     urlFormatString: `${DOMAIN}/?url=%@`,
     authenticationToken: '123456',
-    webServiceURL: 'https://test.akadigital.net/v1/pushPackages/web.net.akadigital.test',
+    webServiceURL: 'https://test.akadigital.net/v1',
   };
   fs.writeFileSync(path.join(tempDir, 'website.json'), JSON.stringify(websiteJSON));
 
