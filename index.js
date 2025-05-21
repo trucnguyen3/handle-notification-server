@@ -49,6 +49,7 @@ app.post("/send-push-fcm", async (req, res) => {
 });
 
 //APNS
+/*
 const forge = require('node-forge');
 const archiver = require("archiver");
 
@@ -163,11 +164,54 @@ async function createPushPackage() {
 
   return zipPath;
 }
+*/
 
+const apn = require('apn');
+
+app.use(bodyParser.json());
+app.use('/.well-known', express.static(path.join(__dirname, 'public')));
+// Endpoint to register the device token
+app.post('/register', (req, res) => {
+  const { deviceToken } = req.body;
+  // Store deviceToken securely (e.g., in a DB)
+  console.log('Received device token:', deviceToken);
+  res.sendStatus(200);
+});
+
+// Endpoint to send a test push
+app.post('/send', async (req, res) => {
+  const { deviceToken, alert } = req.body;
+
+  const options = {
+    cert: path.join(__dirname, 'certs', 'cert.pem'),
+    key: path.join(__dirname, 'certs', 'key.pem'),
+    passphrase: 'your-cert-password',
+    production: false
+  };
+
+  const apnProvider = new apn.Provider(options);
+
+  const sendSafariPush = async (deviceToken, alert) => {
+    const note = new apn.Notification();
+    note.alert = alert || 'Hello from Safari!';
+    note.topic = 'web.net.akadigital.test'; // Your Website Push ID from Apple
+    try {
+      const result = await apnProvider.send(note, deviceToken);
+      console.log(result);
+    } catch (err) {
+      console.error('Push failed:', err);
+    } finally {
+      apnProvider.shutdown();
+    }
+  };
+});
+
+/*
 app.use(express.static('public'));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+*/
 
 
 app.listen(3000, () => {
