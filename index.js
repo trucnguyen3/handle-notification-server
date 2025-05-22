@@ -7,13 +7,6 @@ app.use(bodyParser.json());
 
 const { execSync } = require("child_process");
 
-try {
-  execSync("ntpdate -u time.google.com");
-  console.log("✅ Time synced with NTP server");
-} catch (err) {
-  console.warn("⚠️ Time sync failed or `ntpdate` is not available:", err.message);
-}
-
 //FCM
 const admin = require("firebase-admin");
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIAL);
