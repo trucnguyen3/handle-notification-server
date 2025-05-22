@@ -14,9 +14,16 @@ const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString('binary'), false);
 const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, '1234');
 
 const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
-const keyBags = p12.getBags({ bagType: forge.pki.oids.keyBag });
-const cert = certBags[forge.pki.oids.certBag][0].cert;
-const privateKey = keyBags[forge.pki.oids.keyBag][0].key;
+const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+
+const cert = certBags[forge.pki.oids.certBag]?.[0]?.cert;
+const privateKey = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag]?.[0]?.key;
+
+if (!cert || !privateKey) {
+  throw new Error('Failed to extract certificate or private key from P12 file.');
+}
+
+console.log('Certificate subject:', cert.subject.attributes.map(attr => `${attr.name}=${attr.value}`).join(', '));
 
 function sha1Base64(filePath) {
   const content = fs.readFileSync(filePath);
