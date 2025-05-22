@@ -158,15 +158,23 @@ async function createPushPackage() {
   return zipPath;
 }
 */
-app.get('/v1/pushPackages/:websitePushID', (req, res) => {
-  const packagePath = path.join(__dirname, 'pushPackage.zip');
-  if (fs.existsSync(packagePath)) {
+const generatePushPackage = require('./generatePushPackage');
+
+app.get('/v1/pushPackages/:websitePushID', async (req, res) => {
+  const websitePushID = req.params.websitePushID;
+  console.log('📥 Incoming request for Website Push ID:', websitePushID);
+
+  try {
+    const packagePath = await generatePushPackage(websitePushID);
     res.setHeader('Content-Type', 'application/zip');
-    res.download(packagePath);
-  } else {
-    res.status(404).send('Push package not found');
+    res.setHeader('Content-Disposition', 'attachment; filename=pushPackage.zip');
+    res.sendFile(packagePath);
+  } catch (error) {
+    console.error('Failed to generate push package:', error);
+    res.status(500).send('Push package generation failed.');
   }
 });
+
 
 app.post('/register', (req, res) => {
   const { deviceToken } = req.body;
