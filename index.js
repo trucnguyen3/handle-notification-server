@@ -168,8 +168,6 @@ async function createPushPackage() {
 
 const apn = require('apn');
 
-app.use(bodyParser.json());
-app.use('/.well-known', express.static(path.join(__dirname, 'public')));
 // Endpoint to register the device token
 app.post('/register', (req, res) => {
   const { deviceToken } = req.body;
@@ -206,12 +204,11 @@ app.post('/send', async (req, res) => {
   };
 });
 
-/*
+
 app.use(express.static('public'));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-*/
 
 
 app.listen(3000, () => {
