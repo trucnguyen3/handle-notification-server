@@ -96,7 +96,7 @@ document.getElementById('enablePush').addEventListener('click', () => {
         console.log("🟡 Requesting permission...");
 
         window.safari.pushNotification.requestPermission(
-          'https://handle-notification-server.onrender.com/v1/pushPackages/web.net.akadigital.test',
+          'https://test.akadigital.net',
           'web.net.akadigital.test',
           { userId: '123' },
           (permission) => {
