@@ -2,7 +2,7 @@
   "websiteName": "AKA Digital",
   "websitePushID": "web.net.akadigital.test",
   "allowedDomains": ["https://test.akadigital.net"],
-  "urlFormatString": "https://test.akadigital.net/%@",
+  "urlFormatString": "https://test.akadigital.net/push/%@",
   "authenticationToken": "lmaoez1234",
-  "webServiceURL": "https://test.akadigital.net/push"
+  "webServiceURL": "https://test.akadigital.net"
 }
