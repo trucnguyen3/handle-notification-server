@@ -8,13 +8,17 @@ const DEVICE_TOKENS = new Set(); // In-memory token storage (use DB in productio
 
 // Serve website.json
 app.get("/push/website.json", (req, res) => {
+  console.log("[LOG] website.json was requested by:", req.headers['user-agent']);
   res.sendFile(path.join(__dirname, "website.json"));
 });
 
 // Register device token
 app.post("/push/register", (req, res) => {
   const { deviceToken } = req.body;
-  if (!deviceToken) return res.status(400).send("Missing deviceToken");
+  if (!deviceToken) {
+    console.warn("[WARN] Missing deviceToken in /push/register");
+    return res.status(400).send("Missing deviceToken");
+  }
 
   DEVICE_TOKENS.add(deviceToken);
   console.log("Registered device:", deviceToken);
