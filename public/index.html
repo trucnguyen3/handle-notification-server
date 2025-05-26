@@ -1,67 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Safari Push Notification Test</title>
+  <meta charset="UTF-8">
+  <title>Safari Push Test</title>
 </head>
 
 <body>
-  <h1>Safari Push Notification</h1>
-  <button onclick="requestSafariPush()">Enable Push</button>
+  <h1>Safari Push Notification Demo</h1>
+  <button onclick="requestSafariPush()">Enable Safari Push</button>
 
   <script>
-    const websitePushID = 'web.net.akadigital.test'; // Your Website Push ID
-    const webServiceURL = 'https://test.akadigital.net';  // Your push server URL
+    const websitePushID = "web.net.akadigital.test"; // Replace with your actual Website Push ID
+    const registrationUrl = "https://test.akadigital.net/push/register"; // Your Node.js backend endpoint
+    const authToken = "lmaoez1234"; // Should match the one in website.json
 
     function requestSafariPush() {
-      if ('safari' in window && 'pushNotification' in window.safari) {
-        const permissionData = window.safari.pushNotification.permission(websitePushID);
-
-        checkRemotePermission(permissionData);
-      } else {
-        alert('Safari Push Notifications are only supported on Safari for macOS.');
+      if (!('safari' in window && 'pushNotification' in window.safari)) {
+        alert("Safari Push Notifications are not supported on this browser.");
+        return;
       }
+
+      const permissionData = window.safari.pushNotification.permission(websitePushID);
+      checkRemotePermission(permissionData);
     }
 
     function checkRemotePermission(permissionData) {
       switch (permissionData.permission) {
         case 'default':
-          // Ask for permission
+          console.log("Requesting permission...");
           window.safari.pushNotification.requestPermission(
-            `${webServiceURL}/v1/pushPackages/${websitePushID}`, // push package endpoint
+            'https://test.akadigital.net',    // Your web service URL (must match `webServiceURL` in website.json)
             websitePushID,
-            {}, // userInfo
-            checkRemotePermission
+            { authToken: authToken },
+            permission => {
+              checkRemotePermission(permission);
+            }
           );
           break;
+
         case 'denied':
-          alert('Permission denied.');
+          alert("You denied Safari Push Notifications.");
           break;
+
         case 'granted':
-          sendDeviceToken(permissionData.deviceToken);
+          console.log("Device Token:", permissionData.deviceToken);
+
+          // Register device token with server
+          fetch(registrationUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ deviceToken: permissionData.deviceToken })
+          })
+            .then(res => {
+              if (res.ok) {
+                alert("Device registered successfully!");
+              } else {
+                alert("Failed to register device.");
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              alert("Error registering device.");
+            });
+
           break;
       }
-    }
-
-    function sendDeviceToken(deviceToken) {
-      console.log('Device token:', deviceToken);
-      fetch(`${webServiceURL}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ deviceToken })
-      })
-        .then(response => {
-          if (response.ok) {
-            alert('Device token sent to server successfully.');
-          } else {
-            alert('Failed to register device token.');
-          }
-        })
-        .catch(error => {
-          console.error('Error sending device token:', error);
-        });
     }
   </script>
 </body>
