@@ -211,6 +211,38 @@ app.post('/send', async (req, res) => {
   };
 });
 
+app.post('/smartech_prompt', async (req, res) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Authorization", "Bearer dfa7f5bf2b541feb134eb5a82b1c16f9");
+  myHeaders.append("Content-Type", "application/json");
+  
+  const raw = JSON.stringify([
+    {
+      "asset_id": "5a201372c01685dfc1d995336f9d41f9",
+      "activity_name": "prompt_clicked",
+      "timestamp": new Date().toISOString().split('T')[0],
+      "identity": "xuantrucx222@gmail.com",
+      "activity_source": "app",
+      "activity_params": {
+        "name": "prompt",
+        "deeplink": "aka://demo/prompt"
+      }
+    }
+  ]);
+  
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow"
+  };
+  
+  fetch("https://api2.netcoresmartech.com/v1/activity/upload", requestOptions)
+    .then((response) => response.text())
+    .then((result) => console.log(result))
+    .catch((error) => console.error(error));
+});
+
 app.use(express.static('public'));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
