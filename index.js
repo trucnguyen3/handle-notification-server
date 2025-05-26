@@ -12,7 +12,7 @@ const DEVICE_TOKENS = new Set(); // In-memory token storage (use DB in productio
 // Serve website.json
 app.get("/push/website.json", (req, res) => {
   console.log("[LOG] website.json was requested by:", req.headers['user-agent']);
-  res.sendFile(path.join(__dirname, "website.json"));
+  res.sendFile(path.join(__dirname, "push", "website.json"));
 });
 
 // Register device token
