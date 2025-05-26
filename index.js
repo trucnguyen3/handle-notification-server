@@ -15,6 +15,11 @@ app.get("/push/website.json", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "push", "website.json"));
 });
 
+app.post("/v1/pushPackages/web.net.akadigital.test", (req, res) => {
+  res.set("Content-Type", "application/zip");
+  res.sendFile(path.join(__dirname, "pushPackage.zip"));
+});
+
 // Register device token
 app.post("/push/register", (req, res) => {
   const { deviceToken } = req.body;
