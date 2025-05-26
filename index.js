@@ -4,6 +4,9 @@ const apn = require("apn");
 const path = require("path");
 const bodyParser = require("body-parser");
 
+const app = express();
+app.use(bodyParser.json());
+
 const DEVICE_TOKENS = new Set(); // In-memory token storage (use DB in production)
 
 // Serve website.json
