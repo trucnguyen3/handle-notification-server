@@ -1,120 +1,81 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const archiver = require('archiver');
-const forge = require('node-forge');
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+const archiver = require("archiver");
+const forge = require("node-forge");
 
-const pushPackagePath = path.join(__dirname, 'pushPackage');
-const iconsetPath = path.join(pushPackagePath, 'icon.iconset');
-const outputZipPath = path.join(__dirname, 'pushPackage.zip');
+// Set proper paths
+const pushPath = path.join(__dirname, "public", "push");
+const certPath = path.join(__dirname, "certs", "cert.pem");
+const keyPath = path.join(__dirname, "certs", "key.pem");
+const outPath = path.join(__dirname, "pushPackage.zip");
 
-// Load and prepare the .p12 cert
-const p12Buffer = fs.readFileSync(path.join(__dirname, 'certs/push_cert.p12'));
-const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString('binary'), false);
-const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, '1234');
+// Step 1: Files relative to push folder
+const files = [
+  "website.json",
+  "icon.iconset/icon_16x16.png",
+  "icon.iconset/icon_16x16@2x.png",
+  "icon.iconset/icon_32x32.png",
+  "icon.iconset/icon_32x32@2x.png",
+  "icon.iconset/icon_128x128.png",
+  "icon.iconset/icon_128x128@2x.png",
+];
 
-const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
-const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
-
-const cert = certBags[forge.pki.oids.certBag]?.[0]?.cert;
-const privateKey = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag]?.[0]?.key;
-
-if (!cert || !privateKey) {
-  throw new Error('Failed to extract certificate or private key from P12 file.');
-}
-
-console.log('Certificate subject:', cert.subject.attributes.map(attr => `${attr.name}=${attr.value}`).join(', '));
-
-function sha1Base64(filePath) {
+// Step 2: Create manifest.json with SHA1 hashes
+const manifest = {};
+files.forEach(file => {
+  const filePath = path.join(pushPath, file); // ✅ fixed
   const content = fs.readFileSync(filePath);
-  const hash = crypto.createHash('sha1');
-  hash.update(content);
-  return hash.digest('base64');
-}
+  const hash = crypto.createHash("sha1").update(content).digest("hex");
+  manifest[file] = hash;
+});
+fs.writeFileSync(path.join(__dirname, "manifest.json"), JSON.stringify(manifest, null, 2));
 
-function generateManifest() {
-  const manifest = {};
-  const files = fs.readdirSync(pushPackagePath);
-  files.forEach(file => {
-    const fullPath = path.join(pushPackagePath, file);
-    if (fs.lstatSync(fullPath).isDirectory()) {
-      // Handle icon.iconset
-      const icons = fs.readdirSync(fullPath);
-      icons.forEach(icon => {
-        const iconPath = path.join(fullPath, icon);
-        const relativePath = `icon.iconset/${icon}`;
-        manifest[relativePath] = sha1Base64(iconPath);
-      });
-    } else {
-      manifest[file] = sha1Base64(fullPath);
-    }
-  });
+// Step 3: Sign manifest.json
+const manifestContent = fs.readFileSync(path.join(__dirname, "manifest.json"));
 
-  fs.writeFileSync(path.join(__dirname, 'manifest.json'), JSON.stringify(manifest));
-  return manifest;
-}
+const p7 = forge.pkcs7.createSignedData();
+p7.content = forge.util.createBuffer(manifestContent);
+p7.addCertificate(fs.readFileSync(certPath).toString());
+p7.addSigner({
+  key: fs.readFileSync(keyPath).toString(),
+  certificate: fs.readFileSync(certPath).toString(),
+  digestAlgorithm: forge.pki.oids.sha1,
+  authenticatedAttributes: [
+    { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
+    {
+      type: forge.pki.oids.messageDigest,
+      value: forge.md.sha1.create().update(manifestContent.toString()).digest().getBytes(),
+    },
+    { type: forge.pki.oids.signingTime, value: new Date() },
+  ],
+});
 
-function generateSignature(manifest) {
-  const manifestBuffer = Buffer.from(JSON.stringify(manifest));
-  const md = forge.md.sha1.create();
-  md.update(manifestBuffer.toString('binary'));
+p7.sign();
+const signature = forge.asn1.toDer(p7.toAsn1()).getBytes();
+fs.writeFileSync(path.join(__dirname, "signature"), Buffer.from(signature, "binary"));
 
-  const signature = forge.pkcs7.createSignedData();
-  signature.content = forge.util.createBuffer(manifestBuffer.toString('binary'));
-  signature.addCertificate(cert);
-  signature.addSigner({
-    key: privateKey,
-    certificate: cert,
-    digestAlgorithm: forge.pki.oids.sha1,
-    authenticatedAttributes: [
-      {
-        type: forge.pki.oids.contentType,
-        value: forge.pki.oids.data
-      },
-      {
-        type: forge.pki.oids.messageDigest
-      },
-      {
-        type: forge.pki.oids.signingTime,
-        value: new Date()
-      }
-    ]
-  });
-  signature.sign();
+// Step 4: Create pushPackage.zip
+const output = fs.createWriteStream(outPath);
+const archive = archiver("zip");
 
-  const asn1 = signature.toAsn1();
-  const derBuffer = Buffer.from(forge.asn1.toDer(asn1).getBytes(), 'binary');
-  fs.writeFileSync(path.join(__dirname, 'signature'), derBuffer);
-}
+output.on("close", () => {
+  console.log("✅ pushPackage.zip created:", outPath);
+});
 
-function zipPushPackage() {
-  const output = fs.createWriteStream(outputZipPath);
-  const archive = archiver('zip', { zlib: { level: 9 } });
+archive.on("error", err => {
+  throw err;
+});
 
-  output.on('close', () => console.log('Push package zipped:', outputZipPath));
-  archive.pipe(output);
+archive.pipe(output);
 
-  const filesToInclude = [
-    'website.json',
-    'manifest.json',
-    'signature'
-  ];
+// Add files from public/push/
+files.forEach(file => {
+  archive.file(path.join(pushPath, file), { name: file }); // ✅ fixed
+});
 
-  filesToInclude.forEach(file => {
-    archive.file(path.join(__dirname, file), { name: file });
-  });
+// Add manifest and signature from root
+archive.file(path.join(__dirname, "manifest.json"), { name: "manifest.json" });
+archive.file(path.join(__dirname, "signature"), { name: "signature" });
 
-  // Add icons
-  const iconFiles = fs.readdirSync(iconsetPath);
-  iconFiles.forEach(file => {
-    const filePath = path.join(iconsetPath, file);
-    archive.file(filePath, { name: `icon.iconset/${file}` });
-  });
-
-  archive.finalize();
-}
-
-// --- Build the Push Package ---
-const manifest = generateManifest();
-generateSignature(manifest);
-zipPushPackage();
+archive.finalize();
