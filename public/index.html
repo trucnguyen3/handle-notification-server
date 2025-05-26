@@ -11,9 +11,7 @@
   <button onclick="requestSafariPush()">Enable Safari Push</button>
 
   <script>
-    const websitePushID = "web.net.akadigital.test"; // Replace with your actual Website Push ID
     const registrationUrl = "https://test.akadigital.net/push/register"; // Your Node.js backend endpoint
-    const authToken = "lmaoez1234"; // Should match the one in website.json
 
     function requestSafariPush() {
       if (!('safari' in window && 'pushNotification' in window.safari)) {
@@ -30,11 +28,16 @@
         case 'default':
           console.log("Requesting permission...");
           window.safari.pushNotification.requestPermission(
-            'https://test.akadigital.net',    // Your web service URL (must match `webServiceURL` in website.json)
-            websitePushID,
-            { authToken: authToken },
-            permission => {
-              checkRemotePermission(permission);
+            "https://test.akadigital.net", // webServiceURL
+            "web.net.akadigital.test",     // websitePushID
+            { userId: "123" },             // user data
+            function (permissionData) {
+              console.log("Permission:", permissionData.permission);
+              if (permissionData.permission === "granted") {
+                console.log("Device Token:", permissionData.deviceToken);
+              } else {
+                console.warn("Permission denied");
+              }
             }
           );
           break;
