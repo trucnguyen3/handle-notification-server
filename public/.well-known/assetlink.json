@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.aka_appsflyer",
+      "sha256_cert_fingerprints": [
+        "25:14:AB:4C:E4:FB:DD:59:03:AE:A6:69:58:A3:63:63:56:79:85:6A:17:DB:D6:1E:E0:AF:28:5C:D7:CB:95:1F"
+      ]
+    }
+  }
+]
