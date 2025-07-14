@@ -20,11 +20,18 @@
       ttq.page();
     }(window, document, 'ttq');
 
+    async function sha256(input) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(input.trim().toLowerCase());
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     // add this before event code to all pages where PII data postback is expected and appropriate 
     ttq.identify({
-      "email": "BFG7000", // string. The email of the customer if available. It must be hashed with SHA-256 on the client side.
-      "phone_number": "BFC7000", // string. The phone number of the customer if available. It must be hashed with SHA-256 on the client side.
-      "external_id": "" // string. Any unique identifier, such as loyalty membership IDs, user IDs, and external cookie IDs.It must be hashed with SHA-256 on the client side.
+      "email": sha256("xuantrucx123@gmail.com"), // string. The email of the customer if available. It must be hashed with SHA-256 on the client side.
+      "phone_number": sha256("+84326733572"), // string. The phone number of the customer if available. It must be hashed with SHA-256 on the client side.
+      "external_id": sha256("321772247") // string. Any unique identifier, such as loyalty membership IDs, user IDs, and external cookie IDs.It must be hashed with SHA-256 on the client side.
     });
 
     ttq.track('ViewContent', {
@@ -36,7 +43,7 @@
         }
       ],
       "value": "5", // number. Value of the order or items sold. Example: 100.
-      "currency": "1" // string. The 4217 currency code. Example: "USD".
+      "currency": "VND" // string. The 4217 currency code. Example: "USD".
     });
 
     //API: 1. pixel: D1QBHPJC77U4R41UT950, 2. token: 1a278cb233d601599d2c2cefa3d6a82e87481a5b, 3. url: /open_api/v1.3/event/track/
