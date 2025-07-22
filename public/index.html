@@ -20,6 +20,13 @@
       ttq.page();
     }(window, document, 'ttq');
 
+    async function sha256(input) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(input.trim().toLowerCase());
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     // add this before event code to all pages where PII data postback is expected and appropriate 
     ttq.identify({
       "email": sha256("xuantrucx123@gmail.com"), // string. The email of the customer if available. It must be hashed with SHA-256 on the client side.
