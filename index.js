@@ -63,6 +63,22 @@ app.post("/push/send", async (req, res) => {
   res.json({ sent: result.sent.length, failed: result.failed });
 });
 
+let latestPayload = null;
+
+app.post('/webhook', (req, res) => {
+  console.log('✅ Webhook received!');
+  latestPayload = req.body;
+  res.status(200).send('Webhook received');
+});
+
+app.get('/webhook/data', (req, res) => {
+  if (latestPayload) {
+    res.json(latestPayload);
+  } else {
+    res.json({ message: 'No webhook data yet' });
+  }
+});
+
 app.use(express.static('public'));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

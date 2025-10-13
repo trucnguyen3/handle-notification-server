@@ -98,6 +98,26 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=690067240659479&ev=PageView&noscript=1" /></noscript>
   <!-- End Meta Pixel Code -->
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+
+    pre {
+      background: #212529;
+      color: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    h1 {
+      color: #343a40;
+    }
+  </style>
 </head>
 
 <body>
@@ -110,6 +130,22 @@
           src="https://static.wixstatic.com/media/09c7dc_a7f769f03b1b446ea03302bdbf2ff7f8~mv2.png/v1/crop/x_0,y_95,w_500,h_311/fill/w_103,h_64,al_c,q_95,usm_0.66_1.00_0.01,enc_avif,quality_auto/AKA_MarTechAgency_logo-removebg-preview.png"
           width="64px" height="64px" style="float: left;">
         <div style="display: inline; float: left; height: 64px; width: 254px; margin-left: 10px;">
+          <div>
+            <h1>📦 Latest Webhook Data</h1>
+            <pre id="output">Waiting for webhook...</pre>
+
+            <script>
+              async function fetchData() {
+                const res = await fetch('https://test.akadigital.net/webhook/data');
+                const json = await res.json();
+                document.getElementById('output').textContent = JSON.stringify(json, null, 2);
+              }
+
+              // Refresh every 2 seconds
+              fetchData();
+              setInterval(fetchData, 2000);
+            </script>
+          </div>
           <div
             style="font-family: Oracle Sans; font-size: 16px; font-weight: 700; line-height: 20px; letter-spacing: 0em; text-align: left; height: 24px;">
             Hello from AKA Demo</div>
