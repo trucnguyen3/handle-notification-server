@@ -99,6 +99,18 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=690067240659479&ev=PageView&noscript=1" /></noscript>
   <!-- End Meta Pixel Code -->
+
+  <script>
+    !function (t, e, n, s, a, c, i, o, p) {
+      t.AppsFlyerSdkObject = a, t.AF = t.AF || function () {
+        (t.AF.q = t.AF.q || []).push([Date.now()].concat(Array.prototype.slice.call(arguments)))
+      },
+        t.AF.id = t.AF.id || i, t.AF.plugins = {}, o = e.createElement(n), p = e.getElementsByTagName(n)[0], o.async = 1,
+        o.src = "https://websdk.appsflyer.com?" + (c.length > 0 ? "st=" + c.split(",").sort().join(",") + "&" : "") + (i.length > 0 ? "af_id=" + i : ""),
+        p.parentNode.insertBefore(o, p)
+    }(window, document, "script", 0, "AF", "pba,banners", { pba: { webAppId: "2bc10127-3683-4891-9b51-2043a5ca93b7" }, banners: { key: "31e36e55-7a4f-43f4-9d46-f0b20dc621e8" } });
+    AF('banners', 'showBanner');
+  </script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
