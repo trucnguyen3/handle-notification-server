@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Vòng quay may mắn</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f7fa;
+            padding-top: 40px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 275px;
+            height: 260px;
+            margin: 20px auto;
+        }
+
+        /* 🔴 Mũi tên CHỈ XUỐNG */
+        .pointer {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%) rotate(0deg);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 22px solid red;
+            z-index: 10;
+        }
+
+        .wheel {
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            border: 8px solid #000;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: conic-gradient(#d32f2f 0deg 72deg,
+                    #ffffff 72deg 144deg,
+                    #000000 144deg 216deg,
+                    #d32f2f 216deg 288deg,
+                    #ffffff 288deg 360deg);
+        }
+
+        .label {
+            position: absolute;
+            width: 50%;
+            left: 50%;
+            top: 50%;
+            transform-origin: 0% 0%;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .label.white {
+            color: #000;
+        }
+
+        .label.black {
+            color: #fff;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🎉 Vòng quay may mắn 🎉</h2>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+
+        <div class="wheel" id="wheel">
+            <div class="label white" style="transform: rotate(36deg) translate(10px, -50%);">
+                1
+            </div>
+            <div class="label black" style="transform: rotate(108deg) translate(10px, -50%);">
+                1
+            </div>
+            <div class="label white" style="transform: rotate(180deg) translate(10px, -50%);">
+                1
+            </div>
+            <div class="label white" style="transform: rotate(252deg) translate(10px, -50%);">
+                1
+            </div>
+            <div class="label black" style="transform: rotate(324deg) translate(10px, -50%);">
+                1
+            </div>
+        </div>
+    </div>
+
+    <button onclick="spin()">QUAY</button>
+
+    <div class="result" id="result"></div>
+
+    <script>
+        // 🔴 Đổi đúng tên JS interface
+        var ct = window.aka_digital_banking_v2;
+
+        function pushEvent(name, props) {
+            if (!ct) return;
+            if (props) {
+                ct.pushEvent(name, JSON.stringify(props));
+            } else {
+                ct.pushEvent(name);
+            }
+        }
+
+        pushEvent("LuckyWheel Viewed", { source: "webview" });
+
+        const rewards = [
+            "1",   // 0–72
+            "1",   // 72–144
+            "1",     // 144–216
+            "1",     // 216–288
+            "1"    // 288–360
+        ];
+
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            pushEvent("LuckyWheel Spin");
+
+            const wheel = document.getElementById("wheel");
+            const resultEl = document.getElementById("result");
+
+            const sliceDeg = 360 / rewards.length;
+            const randomDeg = Math.random() * 360;
+
+            currentRotation += 360 * 5 + randomDeg;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            resultEl.innerText = "";
+
+            setTimeout(() => {
+                const finalDeg = (currentRotation % 360 + 360) % 360;
+
+                // 🔴 mũi tên chỉ xuống (6h = 90deg trong conic)
+                const pointerDeg = (360 - finalDeg + 90) % 360;
+
+                const index = Math.floor(pointerDeg / sliceDeg);
+                const reward = rewards[index];
+
+                resultEl.innerText = "🎁 Bạn nhận được: " + reward;
+
+                pushEvent("LuckyWheel Result", {
+                    reward,
+                    index,
+                    angle: pointerDeg
+                });
+
+                isSpinning = false;
+            }, 4000);
+        }
+    </script>
+
+</body>
+
+</html>
